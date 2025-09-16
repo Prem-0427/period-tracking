@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+ <!-- Navigation -->
+  <nav>
+    <h1>Period Tracker</h1>
+    <div>
+      <a href="index.html" class="active">Home</a>
+      <a href="track.html" class="active">Check Menstrual</a>
+      <a href="history.html">History</a>
+      <a href="profile.html">Profile</a>
+      <a href="about.html">About</a>
+      <a href="logout.html">Logout</a>
+    </div>
+  </nav>
+
+  <div class="form-sectioncontainer" style="margin-top: 80px; margin-bottom: 60px;">
+    <h2 style="text-align: center;">Your Profile</h2>
+    <p><strong>Name:</strong> <span id="userName"></span></p>
+    <p><strong>Email:</strong> <span id="userEmail"></span></p>
+
+    <h3>Update Password</h3>
+    <form id="updatePasswordForm">
+      <input type="password" id="oldPassword" placeholder="Old Password" required>
+      <input type="password" id="newPassword" placeholder="New Password" required>
+      <button type="submit" onclick="click()">Update Password</button>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Period Tracker | All rights reserved.</p>
+  </footer>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login.html";
+    }
+
+    // Load user profile
+    async function loadProfile() {
+      try {
+        const res = await fetch("http://localhost:5000/api/me", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        const data = await res.json();
+        document.getElementById("userName").innerText = data.name;
+        document.getElementById("userEmail").innerText = data.email;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadProfile();
+
+    // Update password
+    function click(){
+    document.getElementById("updatePasswordForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const oldPassword = document.getElementById("oldPassword").value;
+      const newPassword = document.getElementById("newPassword").value;
+
+      const res = await fetch("http://localhost:5000/api/update-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ oldPassword, newPassword })
+      });
+
+      const data = await res.json();
+      alert(data.message);
+      if (res.ok) {
+        document.getElementById("updatePasswordForm").reset();
+      }
+    });
+  }
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "/login.html";
+    });
+  </script>
+  
+
+</footer>
+</body>
+</html>

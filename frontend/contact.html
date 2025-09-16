@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact Us</title>
+ <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+    <nav>
+    <h1>Period Tracker</h1>
+    <div>
+     <a href="logout.html">Home</a>
+      <a href="about1.html">About</a>
+      <a href="contact.html">Contact Us</a>
+      <a href="signup.html">Signup</a>
+       <a href="login.html">Login</a>
+    </div>
+  </nav>
+    <div class="container1" >
+  <h1>📩 Contact Us</h1>
+  <form id="contactForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="email" id="email" placeholder="Your Email" required>
+      <input type="text" id="subject" placeholder="Subject" required>
+      <textarea id="message" placeholder="Your Message" rows="4" required></textarea>
+      <button type="button" onclick="submitContact()">Send</button>
+    </form>
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    function submitContact() {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+      const message = document.getElementById("message").value.trim();
+      const msgDiv = document.getElementById("msg");
+
+      if (!name || !email || !subject || !message) {
+        alert("⚠ Please fill all fields.");
+        
+        return;
+      }
+
+      // Save to localStorage (per-user)
+      const currentUser = localStorage.getItem("currentUser") || "guest";
+      const contacts = JSON.parse(localStorage.getItem("contacts")) || [];
+      contacts.push({ user: currentUser, name, email, subject, message, date: new Date().toISOString() });
+      localStorage.setItem("contacts", JSON.stringify(contacts));
+
+       alert("✅ Message sent successfully!");
+      
+
+      // Clear form
+      document.getElementById("contactForm").reset();
+
+      // OPTIONAL: Send to backend API if available
+      
+      fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message })
+      })
+      .then(res => res.json())
+      .then(() => console.log("Saved to server"))
+      .catch(() => console.warn("Server not connected, saved locally only."));
+      
+    }
+
+  </script>
+   <!-- Footer -->
+  <footer>
+    <p>© 2025 Period Tracker | Stay healthy, stay informed.</p>
+  </footer>
+</body>
+</html>

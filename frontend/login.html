@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <h1>Period Tracker</h1>
+    <div>
+      
+      <a href="logout.html">Home</a>
+      <a href="about1.html">About</a>
+      <a href="contact.html">Contact Us</a>
+      <a href="signup.html">Signup</a>
+      <a href="login.html">Login</a>
+     
+    </div>
+  </nav>
+  <div class="container1" >
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+    <p><a href="forgot.html">Forgot Password?</a></p>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        window.location.href = "/index.html";
+      } else {
+        alert(data.message);
+      }
+    });
+  </script>
+  
+<footer class="footer">
+  <p>© 2025 Period Tracker | All rights reserved.</p>
+</footer>
+</body>
+</html>

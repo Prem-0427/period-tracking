@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Period Tracker - Home</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <h1>Period Tracker</h1>
+    <div>
+      <a href="index.html" class="active">Home</a>
+      <a href="track.html" class="active">Check Menstrual</a>
+      <a href="history.html">History</a>
+      <a href="profile.html">Profile</a>
+      <a href="about.html">About</a>
+      <a href="logout.html">Logout</a>
+    </div>
+  </nav>
+  
+
+  <!-- Period Prediction Form -->
+  <section class="form-sectioncontainer">
+     <h1><strong>Welcome,</strong> <span id="userName"></span></h1>
+    <h3>🔮 Period Prediction</h3>
+    <form id="periodForm" class="center">
+      <input type="number" id="age" placeholder="Age" required />
+      <input type="number" id="cycleLength" placeholder="Cycle Length (days)" required />
+      <input type="date" id="lastPeriodDate" required />
+      <button type="submit">Predict</button>
+    </form>
+
+    <p id="predictionResult" class="result"><br></p><br>
+    <div class="center">
+      <button id="notifyBtn" class="notifyBtn" style="display:none;" onclick="click()">Get Notified</button>
+    </div>
+  </section>
+
+  <!-- Food Log Section -->
+  <section class="form-sectioncontainer">
+    <h3>🥗 Food Log</h3>
+    <form id="foodForm" class="center">
+      <input type="date" id="foodDate" required />
+      <textarea id="foodDetails" placeholder="Enter food details..." rows="3" required></textarea>
+      <button type="submit" onclick="submit()">Save Food Log</button>
+    </form>
+
+  
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Period Tracker | Stay healthy, stay informed.</p>
+  </footer>
+
+  <!-- Inline JavaScript -->
+  <script>
+     const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login.html";
+    }
+   // Load user profile
+    async function loadProfile() {
+      try {
+        const res = await fetch("http://localhost:5000/api/me", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        const data = await res.json();
+        document.getElementById("userName").innerText = data.name;
+        
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadProfile();
+//next
+    document.addEventListener("DOMContentLoaded", () => {
+      const periodForm = document.getElementById("periodForm");
+      const predictionResult = document.getElementById("predictionResult");
+      const notifyBtn = document.getElementById("notifyBtn");
+      const foodForm = document.getElementById("foodForm");
+
+      // Handle Period Prediction
+      periodForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const age = parseInt(document.getElementById("age").value);
+        const cycleLength = parseInt(document.getElementById("cycleLength").value);
+        const lastPeriodDate = new Date(document.getElementById("lastPeriodDate").value);
+
+        if (cycleLength < 21 || cycleLength > 35) {
+          predictionResult.textContent = "⚠️ Cycle length must be between 21 and 35 days.";
+          predictionResult.style.color = "red";
+          return;
+        }
+
+        const predictedDate = new Date(lastPeriodDate);
+        predictedDate.setDate(predictedDate.getDate() + cycleLength);
+
+        let ageMessage = "";
+        if (age < 18) {
+          ageMessage = "Note: Teen cycles may be irregular.";
+        } else if (age > 40) {
+          ageMessage = "Note: Cycle patterns may change with age.";
+        }
+
+        predictionResult.textContent = 
+          `Your next predicted period is on ${predictedDate.toDateString()}. ${ageMessage}`;
+        predictionResult.style.color = "green";
+
+        let history = JSON.parse(localStorage.getItem("periodHistory")) || [];
+        history.push({
+          userName,
+          age,
+          cycleLength,
+          lastPeriod: lastPeriodDate.toDateString(),
+          predicted: predictedDate.toDateString()
+        });
+        localStorage.setItem("periodHistory", JSON.stringify(history));
+        notifyBtn.style.display = "inline-block";
+      });
+
+      // Notifications
+      notifyBtn.addEventListener("click", () => {
+        if (Notification.permission === "granted") {
+          new Notification("Reminder set! You'll get daily notifications.");
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then((perm) => {
+            if (perm === "granted") {
+              new Notification("Reminder set! You'll get daily notifications.");
+            }
+          });
+        }
+      });
+
+      // Food Log
+      foodForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const foodDate = document.getElementById("foodDate").value;
+        const foodDetails = document.getElementById("foodDetails").value;
+
+        let logs = JSON.parse(localStorage.getItem("foodLogs")) || [];
+        logs.push({ date: foodDate, details: foodDetails });
+        localStorage.setItem("foodLogs", JSON.stringify(logs));
+        alert("Food log saved!");
+        updateFoodList();
+       
+        
+      });
+
+      function updateFoodList() {
+        const foodList = document.getElementById("foodList");
+        let logs = JSON.parse(localStorage.getItem("foodLogs")) || [];
+        foodList.innerHTML = "";
+
+        logs.slice(-5).reverse().forEach(log => {
+          const li = document.createElement("li");
+          li.textContent = `${log.date}: ${log.details}`;
+          foodList.appendChild(li);
+        });
+      }
+      updateFoodList();
+    });
+  </script>
+</body>
+</html>
