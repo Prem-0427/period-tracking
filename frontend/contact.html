@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact Us</title>
+ <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+    <nav>
+    <h1>Period Tracker</h1>
+    <div>
+     <a href="logout.html">Home</a>
+      <a href="about1.html">About</a>
+      <a href="contact.html">Contact Us</a>
+      <a href="signup.html">Signup</a>
+       <a href="login.html">Login</a>
+    </div>
+  </nav>
+    <div class="container1" >
+  <h1>📩 Contact Us</h1>
+  <form id="contactForm">
+    <input type="text" name="name" placeholder="Your Name" required>
+    <input type="email" name="email" placeholder="Your Email" required>
+    <input type="text" name="phone" placeholder="Your Phone">
+    <input type="text" name="subject" placeholder="Subject">
+    <textarea name="message" placeholder="Your Message" required></textarea>
+    <button type="submit">Send</button>
+  </form>
+</div>
+  <script>
+    document.getElementById("contactForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(e.target).entries());
+
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+      alert(data.msg);
+
+      if(data.success) e.target.reset();
+    });
+  </script>
+   <!-- Footer -->
+  <footer>
+    <p>© 2025 Period Tracker | Stay healthy, stay informed.</p>
+  </footer>
+</body>
+</html>
